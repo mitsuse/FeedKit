@@ -24,14 +24,34 @@
 
 import XCTest
 
+#if SWIFT_PACKAGE
+private let workingDirectoryString =
+    URL(string: FileManager.default.currentDirectoryPath)!.absoluteString
+
+private let resources: [String: String] = [
+    "Atom.xml": "/Tests/FeedKitTests/xml/Atom.xml",
+    "Content.xml": "/Tests/FeedKitTests/xml/Content.xml",
+    "DC.xml": "/Tests/FeedKitTests/xml/DC.xml",
+    "FeedNotFound.xml": "/Tests/FeedKitTests/xml/FeedNotFound.xml",
+    "RSS2.xml": "/Tests/FeedKitTests/xml/RSS2.xml",
+    "Syndication.xml": "/Tests/FeedKitTests/xml/Syndication.xml",
+]
+#endif
+
 class BaseTestCase: XCTestCase {
     
     let timeout: TimeInterval = 10.0
     
     func fileURL(_ name: String, type: String) -> URL {
+        #if SWIFT_PACKAGE
+        // WORKAROUND: obtain resources in SPM (ttps://bugs.swift.org/browse/SR-2866W)
+        //             This requires tests with SPM to run on the root directory of the project.
+        return URL(fileURLWithPath: workingDirectoryString + resources["\(name).\(type)"]!)
+        #else
         let bundle = Bundle(for: type(of: self))
         let filePath = bundle.path(forResource: name, ofType: type)!
         return URL(fileURLWithPath: filePath)
+        #endif
     }
     
 }
